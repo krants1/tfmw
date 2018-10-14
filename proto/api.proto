@@ -1,0 +1,17 @@
+syntax = "proto3";
+package protos;
+
+message Login {
+    string Application = 1;
+    string Name = 2;
+    string Secret = 3;
+}
+
+message Welcome {
+    string Application = 1;
+}
+
+message Ping {}
+message Pong {}
+
+
