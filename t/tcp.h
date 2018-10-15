@@ -197,7 +197,7 @@ namespace T {
 					if (isConnected())
 						handle(Event::Execute);
 					else {
-						Sleep(1000);
+						sleep(1000);
 						log("TryReConnect", LogType::Warning);
 						open();
 					}
