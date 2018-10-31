@@ -57,12 +57,13 @@ namespace T {
 		std::atomic<int32_t> threadsCount{};
 	public:
 		explicit TCPService(unsigned short port) : SocketHelper(), port(port) {
-			LogHelper::init(__FUNCTION__);
+			LogHelper::init(__func__);
 			threadsCount.store(0);
 		}
 
 		virtual void handle(socket &sock) = 0;
 
+	protected:
 		void loop(const std::shared_ptr<socket> &sock) {
 			try {
 				while ((*sock).is_open() && !terminated)
@@ -70,10 +71,11 @@ namespace T {
 			}
 			catch (std::exception &e) {
 				log("[loop] " + std::string(e.what()), T::LogType::Error);
-			}
+			}			
+			log("[disconnected]");
 			this->threadsCount--;
 		}
-	protected:
+
 		void doAccept(const std::shared_ptr<socket> &sock) {
 			btcp::endpoint lep = sock->local_endpoint();
 			log("[accept] " + lep.address().to_string() + ":" + std::to_string(lep.port()));
@@ -87,7 +89,7 @@ namespace T {
 				acceptor.open(endpoint.protocol());
 				acceptor.bind(endpoint);
 				acceptor.listen();
-
+				log("Start listening..");
 				while (acceptor.is_open()) {
 					std::shared_ptr<socket> sock = std::make_shared<socket>(io_service);
 					boost::system::error_code ec;
@@ -102,8 +104,10 @@ namespace T {
 		void stop() override {
 			terminated = true;
 			try {
-				if (acceptor.is_open())
-					acceptor.close();
+				if (acceptor.is_open()) {
+					log("End listening");
+					acceptor.close();					
+				}		
 			}
 			catch (std::exception &e) {
 				log("[stop] " + std::string(e.what()), LogType::Error);

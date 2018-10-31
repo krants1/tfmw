@@ -137,7 +137,9 @@ namespace T {
 					                                              typeid(bool).name(),
 					                                              typeid(float).name(),
 					                                              typeid(double).name(),
-					                                              typeid(long).name()
+					                                              typeid(long).name(),
+																  typeid(short).name(),
+																  typeid(unsigned short).name()																  
 			                                              });
 
 			if (allowTypes.find(typeid(T).name()) == allowTypes.end()) {

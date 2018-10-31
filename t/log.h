@@ -34,15 +34,20 @@ namespace T {
 			seconds s = duration_cast<seconds>(ms);
 			std::time_t t = s.count();
 			std::size_t fractional_seconds = (std::size_t) ms.count() % 1000;
-			struct tm *timeinfo;
 			char buffer[40];
 			time(&t);
-			timeinfo = localtime(&t);
-			//localtime_s(timeinfo, &t);
-			strftime(buffer, sizeof(buffer), "%d.%m.%y %H:%M:%S.", timeinfo);
+#ifdef _MSC_VER
+			struct tm timeinfo;
+			localtime_s(&timeinfo, &t);
+			struct tm *p_timeinfo = &timeinfo;
+#else
+			struct tm *p_timeinfo;
+			p_timeinfo = localtime(&t);
+#endif		
+			strftime(buffer, sizeof(buffer), "%d.%m.%y %H:%M:%S.", p_timeinfo);
 			return std::string(buffer) + std::to_string(fractional_seconds);
 		}
-	public :
+	public:
 		explicit LogData(std::string text, LogType logType = LogType::Info, bool textOnly = false) {
 			using namespace std::chrono;
 			high_resolution_clock::time_point tp = high_resolution_clock::now();

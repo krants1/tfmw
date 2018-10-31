@@ -27,12 +27,13 @@ namespace T {
 		Application() {
 			log_thread_writer_static = &ltw;
 			log_thread_writer_static->run();
-			T::LogHelper::init(__func__);
-			log("Create");
+			T::LogHelper::init(__func__);			
 			SetSignalHundler();
 			application_run = true;
 		}
-		void run() {
+		virtual void setUp() {}
+		virtual void run() {
+			this->setUp();
 			log("Run");
 			try {
 				while (!application_terminated) {

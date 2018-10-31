@@ -16,6 +16,7 @@ namespace T {
 		virtual void serialize(std::ostream &) {};
 		virtual void hundle(reply) {}
 		virtual ~Packet() = default;
+		bool closeSocket = false;
 	};
 
 	class Controller {
@@ -64,6 +65,8 @@ namespace T {
 	class PacketsSocketHelper : public SocketHelper {
 	protected:
 		Controller controller;
+		// ToDo: crutch, take out of class
+		boost::mutex bufMutex;
 		boost::asio::streambuf buf;
 		std::ostream outStream{&buf};
 		std::istream inStream{&buf};
@@ -86,6 +89,7 @@ namespace T {
 		};
 
 		void managePackets(socket &s) {
+			boost::unique_lock<boost::mutex> l(bufMutex);
 			unsigned int number;
 			readPacket(s, number);
 
@@ -105,6 +109,8 @@ namespace T {
 			};
 
 			p->hundle(funcReply);
+			if (p->closeSocket)
+				s.close();
 		}
 	};
 
