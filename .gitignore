@@ -11,3 +11,4 @@
 /cmake-build-debug-wsl_ninja
 /cmake-build-release-mingw
 /msbin
+/cmake-build-release-cygwin

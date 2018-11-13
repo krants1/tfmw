@@ -6,6 +6,7 @@ option(ENABLE_PROTOBUF "ENABLE_PROTOBUF(not MINGW)" OFF)
 option(ENABLE_CLANG "ENABLE_CLANG(CYGWIN only)" OFF)
 option(ENABLE_CCACHE "ENABLE_CCACHE(not MSVC)" OFF)
 option(ENABLE_COTIRE "ENABLE_COTIRE(not MSVC)" ON)
+option(ENABLE_GOOGLE_TESTS "ENABLE_GOOGLE_TESTS" OFF)
 
 if (NOT MSVC AND ENABLE_COTIRE)
     set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/CMake")
@@ -22,9 +23,6 @@ if (NOT MINGW AND ENABLE_PROTOBUF)
     add_definitions(-D_USE_PROTOBUF_)
     list(APPEND SOURCE_FILES "proto/examples/tcp.cpp")
 endif ()
-
-
-#list(APPEND SOURCE_FILES t/tcp.h t/application.h t/counters.h t/ini_files.h t/log.h t/packet.h t/threads.h t/time_utils.h)
 
 list(APPEND SOURCE_FILES "t/examples/tcp.cpp"
         "t/examples/log.cpp"
@@ -108,7 +106,7 @@ if (MSVC)
 endif ()
 
 find_package(Boost COMPONENTS signals serialization filesystem thread system REQUIRED)
-if (Boost_FOUND)	
+if (Boost_FOUND)
     message(STATUS "Boost_VERSION: ${Boost_VERSION}")
     message(STATUS "Boost_INCLUDE_DIRS: ${Boost_INCLUDE_DIRS}")
     message(STATUS "Boost_LIBRARIES: ${Boost_LIBRARIES}")
@@ -116,6 +114,16 @@ if (Boost_FOUND)
     target_link_libraries(${PROJECT_APP_SAMPLE} ${Boost_LIBRARIES})
     include_directories(${Boost_INCLUDE_DIR})
     #if (MSVC) include_directories(${Boost_INCLUDE_DIR}) endif ()
+endif ()
+
+if (ENABLE_GOOGLE_TESTS)
+    enable_testing()
+    find_package(GTest REQUIRED)
+    set(PROJECT_TESTS Tests)
+	set(TEST_FILES "tests/packet.cpp")
+    add_executable(${PROJECT_TESTS} ${TEST_FILES})
+    target_link_libraries(${PROJECT_TESTS} PRIVATE GTest::GTest GTest::Main ${Boost_LIBRARIES})
+    add_test(${PROJECT_TESTS} ${TEST_FILES})
 endif ()
 
 if (NOT MSVC AND ENABLE_COTIRE)
