@@ -1,24 +1,24 @@
-#include "../threads.h"
+#include <utility>
 
 #include <string>
+#include "../threads.h"
 
 int example_t_threads() {
-
 	std::cout << "MyThread" << std::endl;
 
 	class MyThread : public T::Thread {
-	private:
-		const std::string par;
 	public:
-		MyThread(const std::string par) : par(par) {}
-		void execute() {
+		explicit MyThread(std::string param) : param_(std::move(param)) {}
+		void execute() final {
 			for (int i = 0; i < 5; i++) {
-				std::cout << par + " " + std::to_string(i) << std::endl;
+				std::cout << param_ + " " + std::to_string(i) << std::endl;
 			}
 		}
-		~MyThread() {
+		~MyThread() override {
 			stop();
 		}
+	private:
+		const std::string param_;
 	};
 
 	MyThread *mt = new MyThread("test");
@@ -27,23 +27,23 @@ int example_t_threads() {
 
 	class MyTasksThread : public T::TasksThread<int> {
 	public:
-		void doTasks(std::queue<int> &tasks) {
+		explicit MyTasksThread(bool doAllTasks) {
+			executeAfterTerminate_ = doAllTasks;
+		}
+		~MyTasksThread() override {
+			stop();
+		}
+		void doTasks(std::queue<int> &tasks) final {
 			while (!tasks.empty()) {
 				sleep(300);
 				std::cout << "proc: " << tasks.front() << std::endl;
 				tasks.pop();
 			}
 		}
-		MyTasksThread(bool doAllTasks) {
-			executeAfterTerminate = doAllTasks;
-		}
-		~MyTasksThread() {
-			stop();
-		}
 	};
 
-	std::cout << std::endl << "doTasksInBackround" << std::endl;
-	MyTasksThread *wt = new MyTasksThread(false);
+	std::cout << "\ndoTasksInBackround" << std::endl;
+	auto *wt = new MyTasksThread(false);
 	wt->run();
 	for (int i = 1; i <= 5; i++) {
 		T::Thread::sleep(100);
@@ -51,9 +51,9 @@ int example_t_threads() {
 	}
 	delete wt;
 
-	std::cout << std::endl << "doAllTasks" << std::endl;
+	std::cout << "\ndoAllTasks" << std::endl;
 
-	MyTasksThread *wt2 = new MyTasksThread(true);
+	auto *wt2 = new MyTasksThread(true);
 	wt2->run();
 	for (int i = 1; i <= 5; i++) {
 		T::Thread::sleep(100);

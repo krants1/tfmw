@@ -24,7 +24,8 @@ if (NOT MINGW AND ENABLE_PROTOBUF)
     list(APPEND SOURCE_FILES "proto/examples/tcp.cpp")
 endif ()
 
-list(APPEND SOURCE_FILES "t/examples/tcp.cpp"
+list(APPEND SOURCE_FILES 
+		"t/examples/tcp.cpp"				
         "t/examples/log.cpp"
         "t/examples/threads.cpp"
         "t/examples/time_utils.cpp"
@@ -53,7 +54,7 @@ endif ()
 
 #set(CMAKE_VERBOSE_MAKEFILE TRUE)
 if (MSVC)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W4")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W3")
     add_definitions(-D_WIN32_WINNT=0x0501)
 else ()
     #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Werror")

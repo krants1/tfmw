@@ -17,7 +17,8 @@ int example_t_log() {
 			log("Destroy");
 		}
 	};
-	MyClass *m = new MyClass;
+
+	auto *m = new MyClass();
 	m->log("Do Somthing..");
 	delete m;
 

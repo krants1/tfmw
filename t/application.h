@@ -1,47 +1,58 @@
-#ifndef __T_APPLICATION_H__
-#define __T_APPLICATION_H__
+#pragma once
 
-#include <string>
 #include "log.h"
-#include <exception>
 
 #ifdef _MSC_VER
 #include <consoleapi.h>
 #endif
 #ifdef __linux__
-
 #include <csignal>
-
 #endif
 
 namespace T {
-	void SetSignalHundler();
+	void setSignalHundler();
 
-	static bool application_run = false;
-	static bool application_terminated = false;
+	namespace statics {
+		static bool applicationRun = false;
+		static bool applicationTerminated = false;
+	}
 
-	class Application : public LogHelper {
-	private:
-		LogThreadWriter ltw;
+	class BaseApplication {
+	public:
+		static void Terminate() {
+			statics::applicationTerminated = true;
+		}
+		static bool Terminated() {
+			return statics::applicationTerminated;
+		}
+		static bool Running() {
+			return statics::applicationRun;
+		}
+		BaseApplication() {
+			statics::applicationRun = true;
+		}
+		~BaseApplication() {
+			statics::applicationRun = false;
+		}
+	};
+
+	class Application : public LogHelper, public BaseApplication {
 	public:
 		Application() {
-			log_thread_writer_static = &ltw;
-			log_thread_writer_static->run();
-			T::LogHelper::init(__func__);			
-			SetSignalHundler();
-			application_run = true;
+			T::LogHelper::init(__func__);
+			setSignalHundler();
 		}
 		virtual void setUp() {}
 		virtual void run() {
-			this->setUp();
+			setUp();
 			log("Run");
 			try {
-				while (!application_terminated) {
+				while (!Terminated()) {
 					execute();
 					T::Thread::sleep(250);
 				}
 			}
-			catch (std::exception &e) {
+			catch (std::exception& e) {
 				log(e.what(), LogType::Error);
 			}
 		}
@@ -49,48 +60,37 @@ namespace T {
 
 		~Application() {
 			log("Destroy");
-			application_run = false;
 		}
-		static void Terminate() {
-			application_terminated = true;
-		}
-		static bool Terminated() {
-			return application_terminated;
-		}
-		static bool Running() {
-			return application_run;
-		}
+	private:
+		LogThreadWriter & ltw = LogThreadWriter::getInstance();
 	};
 
 #ifdef __linux__
-	void signalHandler(int signnum) {
-		slog("\nSignal: " + std::to_string(signnum));
+	void signalHandler(int) {
 		Application::Terminate();
 	}
-	void SetSignalHundler() {
+	void setSignalHundler() {
 		signal(SIGINT, signalHandler);
 	}
 #else
-	BOOL WINAPI ConsoleHandler(DWORD dwType) {
+	BOOL WINAPI ñonsoleHandler(DWORD dwType) {
 		switch (dwType) {
-			case CTRL_C_EVENT:
-				Application::Terminate();
-				return TRUE;
-			case CTRL_CLOSE_EVENT:
-			case CTRL_LOGOFF_EVENT:
-			case CTRL_SHUTDOWN_EVENT:
-				Application::Terminate();
-				while (Application::Running())
-					T::Thread::sleep(10);
-				return TRUE;
-			default:
-				return FALSE;
+		case CTRL_C_EVENT:
+			Application::Terminate();
+			return TRUE;
+		case CTRL_CLOSE_EVENT:
+		case CTRL_LOGOFF_EVENT:
+		case CTRL_SHUTDOWN_EVENT:
+			Application::Terminate();
+			while (Application::Running())
+				T::Thread::sleep(10);
+			return TRUE;
+		default:
+			return FALSE;
 		}
 	}
-	void SetSignalHundler() {
-		SetConsoleCtrlHandler((PHANDLER_ROUTINE) ConsoleHandler, TRUE);
+	void setSignalHundler() {
+		SetConsoleCtrlHandler((PHANDLER_ROUTINE) ñonsoleHandler, TRUE);
 	}
 #endif
-
 }
-#endif //__T_APPLICATION_H__

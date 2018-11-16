@@ -10,8 +10,23 @@ public:
 };
 
 class MyApplication : public T::Application {
+public:
+	MyApplication() {
+		settings_.launchCount = settings_.launchCount + 1;
+	}
+	~MyApplication() {
+		doSomeThing.join();
+		settings_.save();
+	}
+	void setUp() override {
+		log("Settings: " + (std::string) settings_.host + ":" + (std::string) settings_.port);
+	}
+	void execute() override {
+		std::cout << ".";
+		std::cout.flush();
+	}
 private:
-	Settings settings;
+	Settings settings_;
 	boost::thread doSomeThing{[]() {
 		while (!Terminated()) {
 			std::cout << ",";
@@ -19,19 +34,6 @@ private:
 			T::Thread::sleep(250);
 		}
 	}};
-public:
-	MyApplication() {
-		settings.launchCount = settings.launchCount + 1;
-		log("Settings: " + (std::string) settings.host + ":" + (std::string) settings.port);
-	}
-	~MyApplication() {
-		doSomeThing.join();
-		settings.save();
-	}
-	void execute() override {
-		std::cout << ".";
-		std::cout.flush();
-	}
 };
 
 int main() {
@@ -41,5 +43,4 @@ int main() {
 	ma.run();
 
 	return 0;
-
 }

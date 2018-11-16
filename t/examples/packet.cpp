@@ -42,23 +42,23 @@ struct TaskPacket : public T::StructPacket<2, Task> {
 
 int example_t_packet() {
 
-	class MyTCPServiceP : public T::TCPServiceP {
+	class MyTCPServiceP : public T::TCPPacketsService {
 	public:
-		explicit MyTCPServiceP(unsigned short port) : TCPServiceP(port) {
+		explicit MyTCPServiceP(unsigned short port) : TCPPacketsService(port) {
 			LogHelper::init(__FUNCTION__);
-			controller.reg(new TaskPacket());
-			controller.reg(new ResultPacket());
+			getController().add(new TaskPacket());
+			getController().add(new ResultPacket());
 		}
 
 		~MyTCPServiceP() override { stop(); };
 	};
 
-	class MyTCPClientP : public T::TCPClientP {
+	class MyTCPClientP : public T::TCPPacketsClient {
 	public:
-		MyTCPClientP(std::string host, short port) : TCPClientP(std::move(host), port) {
+		MyTCPClientP(std::string host, short port) : TCPPacketsClient(std::move(host), port) {
 			LogHelper::init(__FUNCTION__);
-			controller.reg(new TaskPacket());
-			controller.reg(new ResultPacket());
+			getController().add(new TaskPacket());
+			getController().add(new ResultPacket());
 		}
 
 		void execute() override {
@@ -69,14 +69,14 @@ int example_t_packet() {
 				tp.message.value1 = 5;
 				tp.message.value2 = 7;
 				tp.message.taskType = TaskType::SUMM;
-				sendPacket(sock, tp);
-				managePackets(sock);
+				sendPacket(sock_, tp);
+				managePackets(sock_);
 
 				tp.message.taskType = TaskType::MULT;
-				sendPacket(sock, tp);
-				managePackets(sock);
+				sendPacket(sock_, tp);
+				managePackets(sock_);
 
-				sock.close();
+				sock_.close();
 			}
 			catch (std::exception &e) {
 				log("[execute] " + std::string(e.what()), T::LogType::Error);

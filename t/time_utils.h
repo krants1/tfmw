@@ -1,38 +1,32 @@
-#ifndef __TIME_UTILS_H__
-#define __TIME_UTILS_H__
+#pragma once
+
+#include <chrono>
+#include <iostream>
 
 #ifdef __linux__
-#define _USE_CHRONO_
-#include <chrono>
-#include <sched.h>
 #else
-
-#include <Windows.h>
-
+#include <windows.h>
 #endif
 
-#include "log.h"
-
 namespace T {
-	class ThreadPriority {
-	public:
+	struct ThreadPriority {
 #ifdef __linux__
 		static void display() {
-			T::slog("__linux__ ThreadPriority::display() not supported yet");
+			std::cout << "__linux__ ThreadPriority::display() not supported yet" << std::endl;
 		}
 		static void setHighest(bool = false) {
-			T::slog("__linux__ ThreadPriority::setHighest() not supported yet");
+			std::cout << "__linux__ ThreadPriority::setHighest() not supported yet" << std::endl;
 		}
 		static void setCritical(bool  = false) {
-			T::slog("__linux__ ThreadPriority::setCritical() not supported yet");
+			std::cout << "__linux__ ThreadPriority::setCritical() not supported yet" << std::endl;
 		}
 		static void setNormal(bool  = false) {
-			T::slog("__linux__ ThreadPriority::setNormal() not supported yet");
+			std::cout << "__linux__ ThreadPriority::setNormal() not supported yet" << std::endl;
 		}
 #else
 		static void display() {
 			int dwThreadPri = GetThreadPriority(GetCurrentThread());
-			printf("Current thread priority: %d\n", dwThreadPri);
+			std::cout << "Current thread priority: " + std::to_string(dwThreadPri) << std::endl;
 		}
 
 		static void setHighest(bool display = false) {
@@ -52,83 +46,48 @@ namespace T {
 #endif
 	};
 
-	struct SimpleTimeProfiler {
-	private:
-#ifdef _USE_CHRONO_
-		typedef std::chrono::high_resolution_clock clock_t;
-		clock_t::time_point startClock, finishClock;
-		clock_t::duration _duration;
-#else
-		LARGE_INTEGER _frequency;
-		LARGE_INTEGER _counter, _counter2;
-		int64_t _duration;
-#endif
-
-		int64_t _count = 0;
-	public:
-		SimpleTimeProfiler() {
-#ifndef _USE_CHRONO_
-			::QueryPerformanceFrequency(&_frequency);
-#endif
+	struct TimeProfiler {
+		TimeProfiler() {
 			reset();
 		}
 		inline void reset() {
-#ifdef _USE_CHRONO_
-			_duration = std::chrono::nanoseconds::zero();
-#else
-			_duration = 0;
-#endif
-			_count = 0;
+			duration_ = std::chrono::nanoseconds::zero();
+			count_ = 0;
 		}
-
 		inline void start() {
-#ifdef _USE_CHRONO_
-			startClock = std::chrono::high_resolution_clock::now();
-#else
-			::QueryPerformanceCounter(&_counter);
-#endif
+			startClock_ = clock_t::now();
 		};
-
 		inline void finish() {
-#ifdef _USE_CHRONO_
-			finishClock = std::chrono::high_resolution_clock::now();
-
-			_duration += (finishClock - startClock);
-#else
-			::QueryPerformanceCounter(&_counter2);
-			_duration += _counter2.QuadPart - _counter.QuadPart;
-#endif
-			_count++;
+			finishClock_ = clock_t::now();
+			duration_ += (finishClock_ - startClock_);
+			count_++;
 		};
-
 		double duration() {
-#ifdef _USE_CHRONO_
-			return (_duration) / std::chrono::milliseconds(1);
-#else
-			return (_duration) / (double) _frequency.QuadPart * 1000;
-#endif
+			return duration_.count();
 		}
-
 		int64_t count() {
-			return _count;
+			return count_;
 		}
+	private:
+		typedef std::chrono::high_resolution_clock clock_t;
+		clock_t::time_point startClock_, finishClock_;
+		std::chrono::duration<double, std::milli> duration_{};
+		int64_t count_ = 0;
 	};
 
 	struct TimeOperation {
-	private:
-		int period;
-		SimpleTimeProfiler rp;
-	public:
-		explicit TimeOperation(int period) : period(period) { rp.start(); }
+		explicit TimeOperation(int period) : period_(period) { tp_.start(); }
 		bool canDoNow() {
-			rp.finish();
-			rp.start();
-			return (rp.duration() >= period);
+			tp_.finish();
+			tp_.start();
+			return (tp_.duration() >= period_);
 		}
 		void endProcess() {
-			rp.reset();
-			rp.start();
+			tp_.reset();
+			tp_.start();
 		};
+	private:
+		int period_;
+		TimeProfiler tp_;
 	};
 }
-#endif //__TIME_UTILS_H__

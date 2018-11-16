@@ -1,36 +1,44 @@
-#ifndef __T_LOG_H__
-#define __T_LOG_H__
+#pragma once
 
 #include <string>
 #include <chrono>
 #include <fstream>
-#include <ctime>
 #include "threads.h"
-
-#ifdef __linux__
-
-#include <unistd.h>
-#include <linux/limits.h>
-
-#else
-#include <windows.h>
-#endif
+#include "paths.h"
 
 namespace T {
-	enum class LogType {
+	enum LogType {
 		Info, Warning, Error
 	};
 	const std::string LogTypeStrings[] = {"Info", "Warning", "Error"};
 
 	struct LogData {
+	public:
+		explicit LogData(std::string& text, LogType logType = LogType::Info, bool textOnly = false) {
+			using namespace std::chrono;
+			high_resolution_clock::time_point tp = high_resolution_clock::now();
+			text_ = text;
+			timePoint_ = tp;
+			type_ = logType;
+			textOnly_ = textOnly;
+		}
+		std::string toString() {
+			if (textOnly_)
+				return text_ + "\r\n";
+			std::string result = timeToString() + "\t|";
+			result += LogTypeStrings[type_] + "\t|";
+			result += this->text_ + "\r\n";
+			return result;
+		}
 	private:
-		bool textOnly;
-		std::string text;
-		LogType type;
-		std::chrono::high_resolution_clock::time_point timePoint;
+		bool textOnly_;
+		std::string text_;
+		LogType type_;
+		std::chrono::high_resolution_clock::time_point timePoint_;
+
 		std::string timeToString() {
 			using namespace std::chrono;
-			milliseconds ms = duration_cast<milliseconds>(this->timePoint.time_since_epoch());
+			milliseconds ms = duration_cast<milliseconds>(this->timePoint_.time_since_epoch());
 			seconds s = duration_cast<seconds>(ms);
 			std::time_t t = s.count();
 			std::size_t fractional_seconds = (std::size_t) ms.count() % 1000;
@@ -41,127 +49,95 @@ namespace T {
 			localtime_s(&timeinfo, &t);
 			struct tm *p_timeinfo = &timeinfo;
 #else
-			struct tm *p_timeinfo;
+			struct tm* p_timeinfo;
 			p_timeinfo = localtime(&t);
-#endif		
+#endif
 			strftime(buffer, sizeof(buffer), "%d.%m.%y %H:%M:%S.", p_timeinfo);
 			return std::string(buffer) + std::to_string(fractional_seconds);
 		}
-	public:
-		explicit LogData(std::string text, LogType logType = LogType::Info, bool textOnly = false) {
-			using namespace std::chrono;
-			high_resolution_clock::time_point tp = high_resolution_clock::now();
-			this->text = std::move(text);
-			this->timePoint = tp;
-			this->type = logType;
-			this->textOnly = textOnly;
-		}
-
-		std::string toString() {
-			if (textOnly)
-				return text + "\r\n";
-			std::string result = timeToString() + "\t|";
-			result += LogTypeStrings[0] + "\t|";
-			result += this->text + "\r\n";
-			return result;
-		}
 	};
 
-	struct PathHelper {
-		static std::string getExePath() {
-#ifdef __linux__
-			char result[PATH_MAX];
-			ssize_t len = readlink("/proc/self/exe", result, PATH_MAX);
-			if (len != -1) {
-				result[len] = '\0';
-				return std::string(result);
-			} else
-				return "";
-#else
-			char result[MAX_PATH];
-			DWORD size = GetModuleFileNameA(NULL, result, MAX_PATH);
-			return (size) ? std::string(result) : "";
-#endif
-		}
-
-		static void replaceExt(std::string &fileName, const std::string &newExt) {
-			std::string::size_type i = fileName.rfind('.', fileName.length());
-			if (i != std::string::npos)
-				fileName.replace(i + 1, newExt.length(), newExt);
-			else
-				fileName += "." + newExt;
-		}
-	};
+	namespace statics {
+		static bool logThreadWriterSingltonAssigned = false;
+	}
 
 	class LogThreadWriter : public TasksThread<LogData> {
-	private:
-		bool consoleMode;
-		std::string fileName;
 	public:
-		void doTasks(std::queue<LogData> &tasks) override {
-			std::ofstream fo(fileName, std::ofstream::out | std::ofstream::app | std::ofstream::ate);
-			std::string s;
-			while (!tasks.empty()) {
-				LogData *ld = &tasks.front();
-				s = ld->toString();
-				fo << s;
-				//fo.write(s.c_str(), sizeof(char)*s.size());
-				tasks.pop();
-			}
-		}
-
-		explicit LogThreadWriter(bool consoleMode = true, std::string fileName = "") : consoleMode(consoleMode) {
-			executeAfterTerminate = true;
+		explicit LogThreadWriter(bool consoleMode = true, std::string fileName = "") : consoleMode_(consoleMode) {
+			executeAfterTerminate_ = true;
 			if (fileName.empty()) {
 				fileName = T::PathHelper::getExePath();
 				T::PathHelper::replaceExt(fileName, "log");
 			}
-			this->fileName = fileName;
+			this->fileName_ = fileName;
 		}
 
 		~LogThreadWriter() override {
 			stop();
 		}
 
-		void addTask(LogData logData) override {
+		void doTasks(std::queue<LogData>& tasks) override {
+			std::ofstream fo(fileName_, std::ofstream::out | std::ofstream::app | std::ofstream::ate);
+			std::string s;
+			while (!tasks.empty()) {
+				LogData* ld = &tasks.front();
+				s = ld->toString();
+				fo << s;
+				tasks.pop();
+			}
+		}
+
+		void addTask(LogData& logData) override {
 			TasksThread::addTask(logData);
-			if (consoleMode)
+			if (consoleMode_)
 				std::cout << logData.toString();
 		}
 
 		inline void log(std::string text, LogType logType = LogType::Info) {
-			addTask(LogData(std::move(text), logType));
+			LogData ld(text, logType);
+			addTask(ld);
+		}
+	private:
+		bool consoleMode_;
+		std::string fileName_;
+	public: //Singlton		
+		static LogThreadWriter& getInstance() {
+			static LogThreadWriter instance;
+			if (!statics::logThreadWriterSingltonAssigned) {
+				instance.run();
+				statics::logThreadWriterSingltonAssigned = true;
+			}
+			return instance;
+		}
+		static bool isSingltonAssigned() {
+			return statics::logThreadWriterSingltonAssigned;
 		}
 	};
 
-	static LogThreadWriter *log_thread_writer_static;
-
 	static inline void log(LogData ld) {
-		if (log_thread_writer_static == nullptr)
-			std::cout << ld.toString();
+		if (LogThreadWriter::isSingltonAssigned())
+			LogThreadWriter::getInstance().addTask(ld);
 		else
-			log_thread_writer_static->addTask(ld);
+			std::cout << ld.toString();
 	}
 
 	static inline void log(std::string text, LogType logType = LogType::Info) {
-		log(LogData(std::move(text), logType));
+		log(LogData(text, logType));
 	}
 
 	static inline void slog(std::string text, LogType logType = LogType::Info) {
-		log(LogData(std::move(text), logType, true));
+		log(LogData(text, logType, true));
 	}
 
 	class LogHelper {
-	protected:
-		std::string className;
 	public:
-		void init(std::string const &clsName) {
-			this->className = clsName;
+		void init(std::string const& className) {
+			this->className_ = className;
 		}
-
-		void log(const std::string &text, LogType logType = LogType::Info) {
-			T::log(className + ": " + text, logType);
+		void log(const std::string& text, LogType logType = LogType::Info) {
+			T::log(className_ + ": " + text, logType);
 		}
+	private:
+		std::string className_;
 	};
 }
-#endif //__T_LOG_H__

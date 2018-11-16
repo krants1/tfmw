@@ -1,6 +1,21 @@
 #include <gtest/gtest.h>
 #include "../t/packet.h"
-
+/*
+void test() {
+	for (auto i = 0; (size_t) i < list_.size(); i++) {
+		Packet* b = list_[i];
+		std::vector<Packet*>* l = &list_;
+		Packet::reply funcReply = [&l, &i](Packet packet) {
+			std::cout << "answer" << std::endl;
+			Packet* b1 = (*l)[i];
+			//Packet b2(*b1);
+			typeid(*b1).name();
+			typeid(packet).name();
+		};
+		b->hundle(funcReply);
+	}
+}
+*/
 struct TestMessage {
 	int vI;
 	float vF;

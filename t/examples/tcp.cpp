@@ -1,7 +1,7 @@
+#include <iostream>
+
 #include "../tcp.h"
 #include "../time_utils.h"
-
-#include <iostream>
 
 int example_t_tcp() {
 
@@ -19,31 +19,31 @@ int example_t_tcp() {
 	};
 
 	class MyTCPClientThread : public T::TCPClient {
-	private:
-		int number;
 	public:
-		MyTCPClientThread(std::string host, short port, int number = 0) :
-			TCPClient(std::move(host), port), number(number) {}
+		MyTCPClientThread(std::string host, unsigned short port, int number = 0) :
+			TCPClient(std::move(host), port), number_(number) {}
 		void execute() override {
 			int i = 0;
 			try {
 				open();
-				T::SimpleTimeProfiler sp;
+				T::TimeProfiler sp;
 				sp.start();
 				for (i = 1; i < 50; i++) {
-					sendLine(sock, std::to_string(i) + ": Wazzup!");
-					std::string s = readLine(sock);
+					sendLine(sock_, std::to_string(i) + ": Wazzup!");
+					std::string s = readLine(sock_);
 					//log(s);
 				}
 				sp.finish();
-				log("Done " + std::to_string(number) + ": " + std::to_string(sp.duration()));
-				sock.close();
+				log("Done " + std::to_string(number_) + ": " + std::to_string(sp.duration()));
+				sock_.close();
 			}
 			catch (std::exception &e) {
 				log("[execute] " + std::string(e.what()), T::LogType::Error);
 			}
 		}
 		~MyTCPClientThread() override { stop(); }
+	private:
+		int number_;
 	};
 
 	T::slog("TCP Service Start..");

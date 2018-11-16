@@ -26,9 +26,10 @@ int example_t_counters() {
 	mc.operation1++;
 
 	boost::thread
-			t1(f, std::ref(mc), 700000),
-			t2(f, std::ref(mc), 300000),
-			t3(f, std::ref(mc), -1000000);
+		t1(f, std::ref(mc), 700000),
+		t2(f, std::ref(mc), 300000),
+		t3(f, std::ref(mc), -1000000);
+
 	t1.join();
 	t2.join();
 	t3.join();
