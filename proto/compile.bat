@@ -1,2 +1,2 @@
-protoc -I="." --cpp_out="scr" "api.proto"
+protoc -I="." --cpp_out="proto" "api.proto"
 pause
