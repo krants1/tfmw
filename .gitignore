@@ -12,3 +12,4 @@
 /cmake-build-release-mingw
 /msbin
 /cmake-build-release-cygwin
+/examples/proto/proto

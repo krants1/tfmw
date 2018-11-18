@@ -17,7 +17,7 @@ option(ENABLE_CLANG "ENABLE_CLANG(CYGWIN only)" OFF)
 option(ENABLE_CCACHE "ENABLE_CCACHE(not MSVC)" OFF)
 
 if (ENABLE_COTIRE AND NOT MSVC )
-    set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/CMake")
+    set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cotire")
     include(cotire)
 endif ()
 
