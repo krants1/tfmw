@@ -1,5 +1,5 @@
-#include "../time_utils.h"
-#include "../log.h"
+#include "../../t/time_utils.h"
+#include "../../t/log.h"
 
 int example_t_time_utils() {
 	T::ThreadPriority::setHighest(true);

@@ -1,4 +1,4 @@
-#include "../log.h"
+#include "../../t/log.h"
 
 int example_t_log() {
 	T::log("info");

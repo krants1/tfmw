@@ -2,6 +2,7 @@
 
 #include <chrono>
 #include <iostream>
+#include <string>
 
 #ifdef __linux__
 #else

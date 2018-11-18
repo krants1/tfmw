@@ -1,7 +1,5 @@
-#include <utility>
-
 #include <string>
-#include "../threads.h"
+#include "../../t/threads.h"
 
 int example_t_threads() {
 	std::cout << "MyThread" << std::endl;
