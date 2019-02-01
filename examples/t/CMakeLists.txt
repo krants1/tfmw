@@ -7,7 +7,8 @@ list(APPEND PROJECT_FILES
         "time_utils.cpp"
         "ini_files.cpp"
         "packet.cpp"
-        "counters.cpp")
+        "counters.cpp"
+		"buffers_stack.cpp")
 
 message(STATUS "Project ${PROJECT_NAME}, files: ${PROJECT_FILES}")
 

@@ -12,6 +12,7 @@ int main() {
 	example_t_tcp();
 	example_t_packet();
 	example_t_counters();
+	example_t_buffers_stack();
 
 #ifdef _MSC_VER
 	system("pause");
