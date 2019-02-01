@@ -22,17 +22,14 @@ int example_t_counters() {
 	};
 
 	MyCounter mc;
-	mc.active.turnOn(true);
-	mc.operation1++;
+	mc.active.turnOn(true);	
 
-	boost::thread
-		t1(f, std::ref(mc), 700000),
-		t2(f, std::ref(mc), 300000),
-		t3(f, std::ref(mc), -1000000);
-
-	t1.join();
-	t2.join();
-	t3.join();
+	boost::thread_group group;	
+	group.add_thread(new boost::thread(f, std::ref(mc), 700000));
+	group.add_thread(new boost::thread(f, std::ref(mc), 300000));
+	group.add_thread(new boost::thread(f, std::ref(mc), -1000000));
+	group.add_thread(new boost::thread(f, std::ref(mc), 777));
+	group.join_all();
 
 	std::cout << mc.getStat() << std::endl;
 
