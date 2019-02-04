@@ -1,6 +1,8 @@
+#pragma once;
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/thread.hpp>
 #include <boost/thread/recursive_mutex.hpp>
+
 #include <stack>
 #include <iostream>
 
@@ -10,6 +12,9 @@ namespace T {
 
 	template<typename T>
 	struct BufferDebt;
+
+	template<typename T>
+	using BufferDebtPtr = std::shared_ptr<BufferDebt<T>>;
 
 	template<typename T>
 	struct BuffersStack {
@@ -23,13 +28,16 @@ namespace T {
 			if (_stack.empty()) {
 				if (_autoSize) {
 					enqueue(BufferPtr<T>(new T()));
-				} else
+				} else {
+					int32_t i(0);
 					while (_stack.empty()) {
+						i++;
 						l.unlock();
-						std::cout << "WARNING: BuffersStack is Empty. Wait..\n";
+						std::cout << "WARNING: BuffersStack is Empty. Wait(" << i << ")..\n";
 						boost::this_thread::sleep_for(boost::chrono::milliseconds(500));
 						l.lock();
 					}
+				}
 			}
 
 			BufferPtr<T> s(_stack.top());
@@ -82,9 +90,14 @@ namespace T {
 		~BufferDebt() noexcept {
 			_buffers.enqueue(_bufferPtr);
 		}
-		BufferPtr<T> getInstance() {
-			return _bufferPtr;
+		BufferPtr<T> getPtrInstance() {
+			return (_bufferPtr);
 		}
+		T & getRefInstance() {
+			T * b(_bufferPtr.get());
+			return (*b);
+		}
+
 	private:
 		BufferPtr<T> _bufferPtr;
 		BuffersStack<T>& _buffers;

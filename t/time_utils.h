@@ -66,6 +66,9 @@ namespace T {
 		double duration() {
 			return duration_.count();
 		}
+		std::string durationStr() {
+			return std::to_string(duration());
+		}
 		int64_t count() {
 			return count_;
 		}
