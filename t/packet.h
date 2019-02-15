@@ -12,7 +12,7 @@ namespace T {
 		virtual unsigned int getNumber() { return 0; }
 		virtual void parse(std::istream&) {};
 		virtual void serialize(std::ostream&) {};
-		virtual void hundle(reply) {}
+		virtual void handle(reply) {}
 		virtual ~Packet() = default;
 		bool closeSocket = false;
 	};
@@ -70,7 +70,7 @@ namespace T {
 				ths->sendPacket(s, packet);
 			};
 
-			p->hundle(funcReply);
+			p->handle(funcReply);
 			if (p->closeSocket)
 				s.close();
 		}

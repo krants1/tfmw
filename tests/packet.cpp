@@ -12,7 +12,7 @@ void test() {
 			typeid(*b1).name();
 			typeid(packet).name();
 		};
-		b->hundle(funcReply);
+		b->handle(funcReply);
 	}
 }
 */

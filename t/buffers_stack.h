@@ -1,4 +1,5 @@
-#pragma once;
+#pragma once
+
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/thread.hpp>
 #include <boost/thread/recursive_mutex.hpp>
