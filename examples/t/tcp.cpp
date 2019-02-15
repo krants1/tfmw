@@ -46,7 +46,7 @@ int example_t_tcp() {
 		int number_;
 	};
 
-	T::slog("TCP Service Start..");
+	T::slog("\nTCP Service Start..");
 	auto *ts = new MyTCPService(5555);
 	ts->run();
 

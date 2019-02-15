@@ -67,7 +67,7 @@ int example_t_buffers_stack() {
 		tp.start();
 		int64_t sizeChange = bs2.size();
 		{
-			auto f2 = [](MyBuffer  & buf) {
+			auto f2 = [](MyBuffer &) {
 			};
 			auto bd = bs2.lend();
 			f2(bd->getRefInstance());
