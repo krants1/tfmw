@@ -1,6 +1,6 @@
 #include <boost/thread.hpp>
-#include "../../t/application.h"
-#include "../../t/ini_files.h"
+#include <t/application.h>
+#include <t/ini_files.h>
 
 class Settings : public T::IniFile {
 public:

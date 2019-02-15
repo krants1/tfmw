@@ -2,7 +2,7 @@
 #include <string>
 #include <iostream>
 
-#include "../../t/packet.h"
+#include <t/packet.h>
 
 enum class TaskType {
 	SUMM, MULT

@@ -1,6 +1,6 @@
-#include "../../t/buffers_stack.h"
-#include "../../t/log.h"
-#include "../../t/time_utils.h"
+#include <t/buffers_stack.h>
+#include <t/log.h>
+#include <t/time_utils.h>
 
 int example_t_buffers_stack() {
 

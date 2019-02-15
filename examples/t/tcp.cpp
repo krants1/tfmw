@@ -1,7 +1,7 @@
 #include <iostream>
 
-#include "../../t/tcp.h"
-#include "../../t/time_utils.h"
+#include <t/tcp.h>
+#include <t/time_utils.h>
 
 int example_t_tcp() {
 

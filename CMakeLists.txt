@@ -45,7 +45,7 @@ if (UNIX)
 endif ()
 
 if (MSVC)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W3 -o2")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W3")
     add_definitions(-D_WIN32_WINNT=0x0501)
 	message(STATUS "CMAKE_TOOLCHAIN_FILE: ${CMAKE_TOOLCHAIN_FILE}")
     message(STATUS "VCPKG_TARGET_TRIPLET: ${VCPKG_TARGET_TRIPLET}")
@@ -70,6 +70,8 @@ if (Boost_FOUND)
     message(STATUS "Boost_LIBRARIES: ${Boost_LIBRARIES}")    
     include_directories(${Boost_INCLUDE_DIR})    
 endif ()
+
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/src)
 
 add_subdirectory ("examples/t")
 add_subdirectory ("examples/application")

@@ -1,6 +1,6 @@
 #include <api.pb.h>
-#include "../../../t/packet.h"
-#include "../../../t/time_utils.h"
+#include <t/packet.h>
+#include <t/time_utils.h>
 
 template<class M>
 struct ProtoPacket : public T::Packet {

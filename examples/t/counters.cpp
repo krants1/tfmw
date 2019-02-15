@@ -1,4 +1,4 @@
-#include "../../t/counters.h"
+#include <t/counters.h>
 #include <iostream>
 #include <boost/thread.hpp>
 
