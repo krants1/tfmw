@@ -1,5 +1,4 @@
-#include "../proto/api.pb.h"
-#include "../proto/api.pb.cc"
+#include <api.pb.h>
 #include "../../../t/packet.h"
 #include "../../../t/time_utils.h"
 
@@ -20,24 +19,24 @@ int example_t_proto_tcp() {
 	GOOGLE_PROTOBUF_VERIFY_VERSION;
 
 	class PongPacket : public ProtoPacket<protos::Pong> {
-		void hundle(reply) override {
-			T::slog("hundle Pong");
+		void handle(reply) override {
+			T::slog("handle Pong");
 		}
 	};
 	class PingPacket : public ProtoPacket<protos::Ping> {
-		void hundle(reply reply) override {
-			T::slog("hundle Ping");
+		void handle(reply reply) override {
+			T::slog("handle Ping");
 			PongPacket p;
 			reply(p);
 		}
 	};
 	class WelcomePacket : public ProtoPacket<protos::Welcome> {
-		void hundle(reply) override {
+		void handle(reply) override {
 			T::slog("Successful login(" + message.application() + ")");
 		}
 	};
 	class LoginPacket : public ProtoPacket<protos::Login> {
-		void hundle(reply reply) override {
+		void handle(reply reply) override {
 			if (message.name() == "Admin" && message.secret() == "secret") {
 				T::slog("Authorized: " + message.name() + "(" + message.application() + ")");
 				WelcomePacket wp;

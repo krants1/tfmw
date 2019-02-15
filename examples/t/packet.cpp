@@ -19,13 +19,13 @@ struct DataResult {
 };
 
 struct ResultPacket : T::StructPacket<1, DataResult> {
-	void hundle(reply) override {
+	void handle(reply) override {
 		T::slog("Result: " + std::to_string(message.value));
 	}
 };
 
 struct TaskPacket : public T::StructPacket<2, Task> {
-	void hundle(reply reply) override {
+	void handle(reply reply) override {
 		std::string s = "Task: " + std::to_string(message.value1);
 		s += (message.taskType == TaskType::SUMM) ? " + " : " * ";
 		s += std::to_string(message.value2);
