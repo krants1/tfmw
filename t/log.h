@@ -5,6 +5,7 @@
 #include <fstream>
 #include "threads.h"
 #include "paths.h"
+#include <boost/lexical_cast.hpp>
 
 namespace T {
 	enum LogType {
@@ -114,6 +115,11 @@ namespace T {
 		}
 	};
 
+	static void enableThreadLogging() {
+		// ToDo: Clear all files & store by date
+		LogThreadWriter::getInstance();
+	}
+
 	static inline void log(LogData ld) {
 		if (LogThreadWriter::isSingltonAssigned())
 			LogThreadWriter::getInstance().addTask(ld);
@@ -140,4 +146,26 @@ namespace T {
 	private:
 		std::string className_;
 	};
+
+	template<LogType LT, bool Simple >
+	struct LogCast {
+		std::string mess;
+		template<typename T>
+		LogCast &operator<<(const T &t) {
+			mess += boost::lexical_cast<std::string>(t);
+			return *this;
+		}
+
+		virtual ~LogCast() {
+			Simple ? slog(mess, LT) : log(mess, LT);
+		}
+
+	};
+	struct info : LogCast<LogType::Info, false> {};
+	struct warning : LogCast<LogType::Warning, false> {};
+	struct error : LogCast<LogType::Error, false> {};
+
+	struct sinfo : LogCast<LogType::Info, true> {};
+	struct swarning : LogCast<LogType::Warning, true> {};
+	struct serror : LogCast<LogType::Error, true> {};
 }
