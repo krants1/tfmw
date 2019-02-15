@@ -51,6 +51,10 @@ namespace T {
 		TimeProfiler() {
 			reset();
 		}
+		inline void reStart() {
+			reset();
+			start();
+		}
 		inline void reset() {
 			duration_ = std::chrono::nanoseconds::zero();
 			count_ = 0;
