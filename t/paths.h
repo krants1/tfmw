@@ -35,5 +35,12 @@ namespace T {
 			else
 				fileName += "." + newExt;
 		}
+		static std::string getFilePath(std::string & fileName) {
+			std::string::size_type p = fileName.rfind('/', fileName.length());
+			if (p != std::string::npos)
+				return fileName.substr(0, p + 1);
+			else
+				return fileName;
+		}
 	};
 }
