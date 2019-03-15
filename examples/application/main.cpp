@@ -37,10 +37,5 @@ private:
 };
 
 int main() {
-	std::cout << "Hello, App World!" << std::endl;
-
-	MyApplication ma;
-	ma.run();
-
-	return 0;
+	return MyApplication().run();
 }

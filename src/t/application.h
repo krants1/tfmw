@@ -4,6 +4,7 @@
 
 #ifdef _MSC_VER
 #include <consoleapi.h>
+#include "utils/crash_dump.h"
 #endif
 #ifdef __linux__
 #include <csignal>
@@ -39,28 +40,36 @@ namespace T {
 	class Application : public LogHelper, public BaseApplication {
 	public:
 		Application() {
+#ifdef _MSC_VER
+			SetUnhandledExceptionFilter(UnhandledException);
+#endif
 			T::LogHelper::init(__func__);
+			log("Create");
 			setSignalHundler();
 		}
 		virtual void setUp() {}
-		virtual void run() {
+		virtual int run() {
 			setUp();
 			log("Run");
-			try {
-				while (!Terminated()) {
+			while (!Terminated()) {
+				try {
 					execute();
-					T::Thread::sleep(250);
 				}
+				catch (std::exception& e) {
+					log(e.what(), LogType::Error);
+				}
+				T::Thread::sleep(executeDelay_);
 			}
-			catch (std::exception& e) {
-				log(e.what(), LogType::Error);
-			}
+			return exitCode_;
 		}
 		virtual void execute() {}
 
 		~Application() {
 			log("Destroy");
 		}
+	protected:
+		int executeDelay_ = 250;
+		int exitCode_ = 0;
 	private:
 		LogThreadWriter & ltw = LogThreadWriter::getInstance();
 	};
@@ -73,7 +82,7 @@ namespace T {
 		signal(SIGINT, signalHandler);
 	}
 #else
-	BOOL WINAPI ñonsoleHandler(DWORD dwType) {
+	BOOL WINAPI consoleHandler(DWORD dwType) {
 		switch (dwType) {
 		case CTRL_C_EVENT:
 			Application::Terminate();
@@ -90,7 +99,7 @@ namespace T {
 		}
 	}
 	void setSignalHundler() {
-		SetConsoleCtrlHandler((PHANDLER_ROUTINE) ñonsoleHandler, TRUE);
+		SetConsoleCtrlHandler((PHANDLER_ROUTINE) consoleHandler, TRUE);
 	}
 #endif
 }
