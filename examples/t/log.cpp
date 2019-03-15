@@ -33,8 +33,15 @@ int example_t_log() {
 		ltw.log("Hello World " + std::to_string(i));
 
 	T::slog("\nEnableThreadLogging");
-	T::enableThreadLogging();
+	T::LogThreadWriter::getInstance();
 	T::info() << "Ok!";
+
+	try {
+		throw std::runtime_error("Test Exception");
+	}
+	catch (std::exception &ex) {
+		T_LOG_EXCEPTION(ex);
+	}
 
 	return 0;
 }

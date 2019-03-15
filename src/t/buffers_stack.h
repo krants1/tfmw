@@ -52,9 +52,9 @@ namespace T {
 		void setAutoSize(bool autoSize) {
 			_autoSize = autoSize;
 		}
-		void init(int count) {
+		void init(unsigned int count) {
 			clear();
-			for (int i = 0; i < count; i++)
+			for (unsigned int i = 0; i < count; i++)
 				enqueue(BufferPtr<T>(new T()));
 		}
 		size_t size() {

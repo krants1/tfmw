@@ -7,6 +7,8 @@
 #include "paths.h"
 #include <boost/lexical_cast.hpp>
 
+#define T_LOG_EXCEPTION(ex) T::log(std::string(ex.what()) + "\n" + std::to_string(__LINE__) + ":" + __FILE__, T::LogType::Error); 	
+
 namespace T {
 	enum LogType {
 		Info, Warning, Error
@@ -115,11 +117,6 @@ namespace T {
 		}
 	};
 
-	static void enableThreadLogging() {
-		// ToDo: Clear all files & store by date
-		LogThreadWriter::getInstance();
-	}
-
 	static inline void log(LogData ld) {
 		if (LogThreadWriter::isSingltonAssigned())
 			LogThreadWriter::getInstance().addTask(ld);
@@ -161,6 +158,8 @@ namespace T {
 		}
 
 	};
+
+
 	struct info : LogCast<LogType::Info, false> {};
 	struct warning : LogCast<LogType::Warning, false> {};
 	struct error : LogCast<LogType::Error, false> {};
