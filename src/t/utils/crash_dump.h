@@ -1,11 +1,15 @@
+#pragma once
 // MVC Only
 #include <dbghelp.h>
 #include <ctime>
+#include <windows.h>
 
 #pragma comment(lib, "dbghelp.lib")
 
-LONG WINAPI UnhandledException(LPEXCEPTION_POINTERS exceptionInfo) {
+static LONG WINAPI UnhandledException(LPEXCEPTION_POINTERS exceptionInfo) {
+	
 	char timeStr[255];
+
 	time_t t = time(NULL);
 
 	struct tm timeinfo;
@@ -13,7 +17,7 @@ LONG WINAPI UnhandledException(LPEXCEPTION_POINTERS exceptionInfo) {
 	struct tm *p_timeinfo = &timeinfo;
 
 	strftime(timeStr, 255, "CrashDump_%d_%m_%Y_%H_%M_%S.dmp", p_timeinfo);
-	HANDLE hFile = CreateFile(
+	HANDLE hFile = CreateFileA(
 		timeStr,
 		GENERIC_WRITE | GENERIC_READ,
 		0,
@@ -43,7 +47,7 @@ LONG WINAPI UnhandledException(LPEXCEPTION_POINTERS exceptionInfo) {
 
 		CloseHandle(hFile);
 	}
-
+	
 	return EXCEPTION_EXECUTE_HANDLER;
 }
 

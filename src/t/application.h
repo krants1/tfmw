@@ -11,7 +11,7 @@
 #endif
 
 namespace T {
-	void setSignalHundler();
+	static void setSignalHundler();
 
 	namespace statics {
 		static bool applicationRun = false;
@@ -75,14 +75,14 @@ namespace T {
 	};
 
 #ifdef __linux__
-	void signalHandler(int) {
+	static void signalHandler(int) {
 		Application::Terminate();
 	}
-	void setSignalHundler() {
+	static void setSignalHundler() {
 		signal(SIGINT, signalHandler);
 	}
 #else
-	BOOL WINAPI consoleHandler(DWORD dwType) {
+	static BOOL WINAPI consoleHandler(DWORD dwType) {
 		switch (dwType) {
 		case CTRL_C_EVENT:
 			Application::Terminate();
@@ -98,7 +98,7 @@ namespace T {
 			return FALSE;
 		}
 	}
-	void setSignalHundler() {
+	static void setSignalHundler() {
 		SetConsoleCtrlHandler((PHANDLER_ROUTINE) consoleHandler, TRUE);
 	}
 #endif
